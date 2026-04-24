@@ -1,0 +1,2 @@
+name,email,phone_e164,lat,lon,rain_pop_threshold,rain_mm_per_h_threshold,cooldown_minutes,channel
+Demo User,demo@example.com,,40.7128,-74.0060,0.5,0.5,120,email
