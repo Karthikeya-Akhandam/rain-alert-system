@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: rain-alert-api
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    plan: starter
+    envVars:
+      - key: OPENWEATHER_API_KEY
+        sync: false
+      - key: ADMIN_API_KEY
+        sync: false
+      - key: DATABASE_URL
+        value: sqlite:////data/rain_alert.db
+    disk:
+      name: rain-data
+      mountPath: /data
+      sizeGB: 1

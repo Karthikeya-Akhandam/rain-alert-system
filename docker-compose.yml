@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - rain_data:/app/data_vol
+    environment:
+      DATABASE_URL: sqlite:////app/data_vol/rain_alert.db
+
+volumes:
+  rain_data: {}
