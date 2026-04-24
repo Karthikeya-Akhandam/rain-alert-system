@@ -1,0 +1,85 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #0f172a;
+  background: #f8fafc;
+}
+body {
+  margin: 0;
+}
+.layout {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.header {
+  background: #0ea5e9;
+  color: white;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.header h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.header nav {
+  display: flex;
+  gap: 1rem;
+}
+.header a {
+  color: white;
+  text-decoration: none;
+}
+.main {
+  padding: 1.5rem;
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+.card {
+  background: white;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgb(15 23 42 / 0.12);
+  margin-bottom: 1rem;
+}
+.row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+label {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+input,
+select,
+button {
+  padding: 0.4rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid #cbd5e1;
+}
+button.primary {
+  background: #0ea5e9;
+  color: white;
+  border-color: #0284c7;
+  cursor: pointer;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+th,
+td {
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.5rem;
+  text-align: left;
+}
+.error {
+  color: #b91c1c;
+  font-size: 0.875rem;
+}
