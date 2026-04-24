@@ -1,0 +1,23 @@
+# Ignore all files in the details directory
+details/
+
+# AI Files
+.cursor/
+.clause/
+CLAUDE.md
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+*.db
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Node / frontend
+node_modules/
+dist/
+frontend/dist/
