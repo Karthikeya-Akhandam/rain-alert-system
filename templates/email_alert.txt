@@ -1,0 +1,9 @@
+Hello {{ name }},
+
+Our Smart Rain Alert check indicates precipitation may affect your area soon.
+
+Reason: {{ reason }}
+Coordinates: {{ lat }}, {{ lon }}
+
+Stay safe,
+Smart Rain Alert
