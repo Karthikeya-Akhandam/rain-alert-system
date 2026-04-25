@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from app.api.deps import settings_dep
 from app.config import Settings
 from app.schemas import HourlySliceOut, WeatherPreviewQuery, WeatherPreviewResponse
-from app.weather.client import OpenWeatherClient, OpenWeatherError
+from app.weather.client import WeatherClient, WeatherError
 
 router = APIRouter(prefix="/weather", tags=["weather"])
 
@@ -15,10 +15,10 @@ def weather_preview(
     settings: Settings = Depends(settings_dep),
 ) -> WeatherPreviewResponse:
     q = WeatherPreviewQuery(lat=lat, lon=lon)
-    client = OpenWeatherClient(settings)
+    client = WeatherClient(settings)
     try:
         fc = client.forecast_for_coordinates(q.lat, q.lon)
-    except OpenWeatherError as exc:
+    except WeatherError as exc:
         raise HTTPException(status_code=status.HTTP_502_BAD_GATEWAY, detail=str(exc)) from exc
     finally:
         client.close()

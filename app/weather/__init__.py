@@ -1,3 +1,3 @@
-from app.weather.client import OpenWeatherClient
+from app.weather.client import WeatherClient
 
-__all__ = ["OpenWeatherClient"]
+__all__ = ["WeatherClient"]

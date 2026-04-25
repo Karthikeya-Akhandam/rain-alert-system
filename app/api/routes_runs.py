@@ -17,7 +17,7 @@ from app.schemas import (
     RunPreviewUserResult,
     RunSummaryOut,
 )
-from app.weather.client import OpenWeatherClient, OpenWeatherError
+from app.weather.client import WeatherClient, WeatherError
 
 router = APIRouter(prefix="/runs", tags=["runs"])
 
@@ -33,14 +33,14 @@ def preview_run(
     if body.user_ids:
         wanted = set(body.user_ids)
         users = [u for u in users if u.id in wanted]
-    client = OpenWeatherClient(settings)
+    client = WeatherClient(settings)
     engine = RainDecisionEngine()
     results: list[RunPreviewUserResult] = []
     try:
         for u in users:
             try:
                 fc = client.forecast_for_coordinates(u.lat, u.lon)
-            except OpenWeatherError as exc:
+            except WeatherError as exc:
                 results.append(
                     RunPreviewUserResult(
                         user_id=u.id,

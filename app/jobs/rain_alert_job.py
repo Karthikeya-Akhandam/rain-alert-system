@@ -13,7 +13,7 @@ from app.notify.router import NotificationRouter
 from app.notify.sms_sender import TwilioSmsSender
 from app.repository import history as history_repo
 from app.repository import users as users_repo
-from app.weather.client import OpenWeatherClient, OpenWeatherError
+from app.weather.client import WeatherClient, WeatherError
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +40,7 @@ def run_rain_alert_job(
     *,
     dry_run: bool = False,
 ) -> tuple[int, int, int, int]:
-    client = OpenWeatherClient(settings)
+    client = WeatherClient(settings)
     engine = RainDecisionEngine()
     email_sender = SmtpEmailSender(settings)
     sms_sender = TwilioSmsSender(settings)
@@ -59,7 +59,7 @@ def run_rain_alert_job(
             users_processed += 1
             try:
                 forecast = client.forecast_for_coordinates(user.lat, user.lon)
-            except OpenWeatherError:
+            except WeatherError:
                 api_failures += 1
                 logger.warning("Weather fetch failed for user %s", user.id)
                 continue
