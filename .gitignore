@@ -5,6 +5,8 @@ details/
 .cursor/
 .clause/
 CLAUDE.md
+GEMINI.md
+GUIDE.md
 
 # Python
 __pycache__/
