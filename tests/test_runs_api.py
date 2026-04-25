@@ -9,7 +9,7 @@ def test_preview_empty(client):
     assert r.json()["results"] == []
 
 
-@patch("app.api.routes_runs.OpenWeatherClient")
+@patch("app.api.routes_runs.WeatherClient")
 def test_preview_with_user(mock_cls, client):
     client.post(
         "/users",

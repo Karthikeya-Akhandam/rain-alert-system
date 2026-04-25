@@ -15,10 +15,8 @@ def client(monkeypatch, tmp_path):
     db_path = tmp_path / "test.db"
     url = f"sqlite:///{db_path}"
     monkeypatch.setenv("DATABASE_URL", url)
-    monkeypatch.setenv("OPENWEATHER_API_KEY", "test-key")
     monkeypatch.setenv("ADMIN_API_KEY", "secret-admin")
     os.environ["DATABASE_URL"] = url
-    os.environ["OPENWEATHER_API_KEY"] = "test-key"
     os.environ["ADMIN_API_KEY"] = "secret-admin"
     from app.config import get_settings
 

@@ -5,7 +5,7 @@ from app.jobs.rain_alert_job import run_rain_alert_job
 from app.weather.parser import NormalizedForecast
 
 
-@patch("app.jobs.rain_alert_job.OpenWeatherClient")
+@patch("app.jobs.rain_alert_job.WeatherClient")
 def test_job_dry_run_skips_notifications(mock_client, client):
     from app.repository.db import get_session_factory
 
