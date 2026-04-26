@@ -9,17 +9,16 @@ vi.mock("../api/client", () => ({
     post: vi.fn(),
     delete: vi.fn(),
   },
-  getAdminKey: () => "",
-  setAdminKey: vi.fn(),
+  getToken: () => "fake-token",
 }));
 
 describe("UsersPage", () => {
-  it("renders admin key section", () => {
+  it("renders users table section", () => {
     render(
       <MemoryRouter>
         <UsersPage />
       </MemoryRouter>,
     );
-    expect(screen.getByText("Admin key")).toBeInTheDocument();
+    expect(screen.getByText(/Add user/i)).toBeInTheDocument();
   });
 });
