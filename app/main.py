@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.deps import get_settings
+from app.api.routes_auth import router as auth_router
 from app.api.routes_health import router as health_router
 from app.api.routes_metrics import router as metrics_router
 from app.api.routes_runs import router as runs_router
@@ -38,6 +39,7 @@ async def add_request_id(request: Request, call_next):
 
 
 app.include_router(health_router)
+app.include_router(auth_router)
 app.include_router(weather_router)
 app.include_router(users_router)
 app.include_router(runs_router)

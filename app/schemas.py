@@ -36,7 +36,8 @@ class WeatherPreviewResponse(BaseModel):
 
 class UserCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
-    email: EmailStr | None = None
+    email: EmailStr = Field(...)
+    password: str = Field(..., min_length=8)
     phone_e164: str | None = Field(None, max_length=20)
     lat: float = Field(..., ge=-90, le=90)
     lon: float = Field(..., ge=-180, le=180)
@@ -44,6 +45,15 @@ class UserCreate(BaseModel):
     rain_mm_per_h_threshold: float | None = Field(None, ge=0)
     cooldown_minutes: int = Field(120, ge=0, le=10080)
     channel: ChannelPreference = ChannelPreference.email
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    email: str | None = None
 
 
 class UserUpdate(BaseModel):

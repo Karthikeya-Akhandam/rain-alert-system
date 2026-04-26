@@ -3,11 +3,61 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import db_session_dep, verify_admin_key
+from app.api import security
+from app.api.deps import db_session_dep, get_current_user, settings_dep, verify_admin_key
+from app.config import Settings
+from app.db_models import User
+from app.notify.email_sender import SmtpEmailSender
+from app.notify.router import NotificationRouter
+from app.notify.sms_sender import TwilioSmsSender
 from app.repository import users as users_repo
 from app.schemas import UserCreate, UserOut, UserUpdate
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+@router.get("/me", response_model=UserOut)
+def get_me(current_user: User = Depends(get_current_user)) -> UserOut:
+    return UserOut.model_validate(current_user)
+
+
+@router.put("/me", response_model=UserOut)
+def update_me(
+    body: UserUpdate,
+    db: Session = Depends(db_session_dep),
+    current_user: User = Depends(get_current_user),
+) -> UserOut:
+    u = users_repo.update_user(db, current_user.id, body)
+    return UserOut.model_validate(u)
+
+
+@router.post("/me/test-alert")
+def send_test_alert(
+    current_user: User = Depends(get_current_user),
+    settings: Settings = Depends(settings_dep),
+) -> dict[str, str]:
+    email_sender = SmtpEmailSender(settings)
+    sms_sender = TwilioSmsSender(settings)
+    router = NotificationRouter(email_sender, sms_sender)
+
+    subject = "Rain Alert Demo: Test Notification"
+    body = (
+        f"Hello {current_user.name}!\n\n"
+        "This is a manually triggered test notification from your Smart Rain Alert system.\n"
+        "Your alert settings are working correctly."
+    )
+
+    results = list(router.alert_user(current_user, subject, body))
+    success = any(r.ok for _, r in results)
+
+    if not success:
+        errors = [r.error for _, r in results if not r.ok]
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send alert: {', '.join(filter(None, errors))}",
+        )
+
+    return {"message": "Test alert sent successfully"}
 
 
 def _validate_contacts(data: UserCreate) -> None:
@@ -38,7 +88,8 @@ def create_user(
     _: None = Depends(verify_admin_key),
 ) -> UserOut:
     _validate_contacts(body)
-    u = users_repo.create_user(db, body)
+    hashed_password = security.get_password_hash(body.password)
+    u = users_repo.create_user(db, body, hashed_password)
     return UserOut.model_validate(u)
 
 

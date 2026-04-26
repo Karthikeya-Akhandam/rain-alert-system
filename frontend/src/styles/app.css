@@ -83,3 +83,55 @@ td {
   color: #b91c1c;
   font-size: 0.875rem;
 }
+
+/* Authentication and Demo Styles */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 70vh;
+}
+.auth-container .card {
+  width: 100%;
+  max-width: 500px;
+}
+.highlight {
+  border: 2px solid #0ea5e9;
+  background-color: #f0f9ff;
+}
+.primary.large {
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  width: 100%;
+}
+.success {
+  color: #15803d;
+  font-weight: bold;
+}
+.link-button {
+  background: none;
+  border: none;
+  color: white;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+.map-picker {
+  width: 100%;
+  margin: 1rem 0;
+}
+.search-bar {
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+.search-bar input {
+  flex: 1;
+}
+.leaflet-container {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+}
+.row input[type="range"] {
+  flex: 1;
+}

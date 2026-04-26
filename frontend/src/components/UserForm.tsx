@@ -2,10 +2,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { api } from "../api/client";
+import { MapPicker } from "./MapPicker";
 
 const schema = z.object({
   name: z.string().min(1),
-  email: z.union([z.string().email(), z.literal("")]),
+  email: z.string().email(),
+  password: z.string().min(8).optional().or(z.literal("")),
   phone_e164: z.union([z.string().max(20), z.literal("")]),
   lat: z.coerce.number().min(-90).max(90),
   lon: z.coerce.number().min(-180).max(180),
@@ -19,6 +21,8 @@ export function UserForm({ onCreated }: { onCreated: () => void }) {
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors },
     reset,
   } = useForm<FormValues>({
@@ -26,6 +30,7 @@ export function UserForm({ onCreated }: { onCreated: () => void }) {
     defaultValues: {
       name: "",
       email: "",
+      password: "",
       phone_e164: "",
       lat: 0,
       lon: 0,
@@ -34,43 +39,45 @@ export function UserForm({ onCreated }: { onCreated: () => void }) {
     },
   });
 
+  const lat = watch("lat");
+  const lon = watch("lon");
+
   const onSubmit = async (v: FormValues) => {
-    const body = {
-      name: v.name,
-      email: v.email || null,
-      phone_e164: v.phone_e164 || null,
-      lat: v.lat,
-      lon: v.lon,
-      rain_pop_threshold: v.rain_pop_threshold,
-      channel: v.channel,
-    };
-    await api.post("/users", body);
+    // This form is now used by admin to create users
+    await api.post("/users", v);
     reset();
     onCreated();
   };
 
   return (
     <form className="card" onSubmit={handleSubmit(onSubmit)}>
-      <h2>Add user</h2>
+      <h2>Add user (Admin)</h2>
       <div className="row">
         <label>Name</label>
         <input {...register("name")} />
-        {errors.name && <span className="error">{errors.name.message}</span>}
       </div>
       <div className="row">
         <label>Email</label>
         <input type="email" {...register("email")} />
       </div>
       <div className="row">
-        <label>Phone E164</label>
-        <input {...register("phone_e164")} placeholder="+15551234567" />
+        <label>Password</label>
+        <input type="password" {...register("password")} placeholder="At least 8 chars" />
       </div>
       <div className="row">
-        <label>Latitude</label>
-        <input type="number" step="any" {...register("lat")} />
-        <label>Longitude</label>
-        <input type="number" step="any" {...register("lon")} />
+        <label>Phone E164</label>
+        <input {...register("phone_e164")} />
       </div>
+      
+      <MapPicker 
+        lat={lat} 
+        lon={lon} 
+        onChange={(newLat, newLon) => {
+          setValue("lat", newLat);
+          setValue("lon", newLon);
+        }} 
+      />
+
       <div className="row">
         <label>Rain pop threshold</label>
         <input type="number" step="0.05" {...register("rain_pop_threshold")} />
@@ -82,7 +89,7 @@ export function UserForm({ onCreated }: { onCreated: () => void }) {
         </select>
       </div>
       <button className="primary" type="submit">
-        Save
+        Save User
       </button>
     </form>
   );

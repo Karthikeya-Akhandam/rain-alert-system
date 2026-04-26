@@ -17,10 +17,15 @@ def get_user(db: Session, user_id: int) -> User | None:
     return db.get(User, user_id)
 
 
-def create_user(db: Session, data: UserCreate) -> User:
+def get_user_by_email(db: Session, email: str) -> User | None:
+    return db.scalar(select(User).where(User.email == email))
+
+
+def create_user(db: Session, data: UserCreate, hashed_password: str) -> User:
     u = User(
         name=data.name,
         email=str(data.email) if data.email else None,
+        hashed_password=hashed_password,
         phone_e164=data.phone_e164,
         lat=data.lat,
         lon=data.lon,
