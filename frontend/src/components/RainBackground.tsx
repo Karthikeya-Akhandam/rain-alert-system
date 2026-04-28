@@ -1,5 +1,3 @@
-import React from "react";
-
 export function RainBackground() {
   // Generate 80 raindrops (increased for prominence) with random positions and delays
   const drops = Array.from({ length: 80 }).map((_, i) => ({

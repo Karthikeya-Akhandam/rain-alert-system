@@ -153,13 +153,13 @@ export function DashboardPage() {
               <h3 className="text-slate-500 text-[10px] font-black uppercase tracking-[0.25em] mb-4">Current Probability</h3>
               <div className="flex items-baseline gap-4">
                 <span className="text-8xl font-black tracking-tighter glow-text italic">
-                  {weather?.next_hour_pop !== null ? Math.round(weather.next_hour_pop * 100) : '--'}
+                  {weather?.next_hour_pop != null ? Math.round(weather.next_hour_pop * 100) : '--'}
                   <span className="text-4xl not-italic ml-2 text-sky-500/50">%</span>
                 </span>
               </div>
               <div className="mt-6 text-2xl font-bold uppercase tracking-tight">
                 Status: <span className="text-sky-400">
-                  {weather?.next_hour_pop && weather.next_hour_pop > 0.5 ? 'Critical Precipitation Detected' : 'Clear Skies Maintained'}
+                  {weather?.next_hour_pop != null && weather.next_hour_pop > 0.5 ? 'Critical Precipitation Detected' : 'Clear Skies Maintained'}
                 </span>
               </div>
             </div>
