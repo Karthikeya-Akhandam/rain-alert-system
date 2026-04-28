@@ -48,7 +48,6 @@ export function SignupPage() {
     setError(null);
     try {
       await api.post("/auth/signup", v);
-      // After signup, login to get token
       const loginData = new FormData();
       loginData.append("username", v.email);
       loginData.append("password", v.password);
@@ -57,69 +56,93 @@ export function SignupPage() {
       setToken(loginResp.data.access_token);
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Signup failed");
+      setError(err.response?.data?.detail || "Registry request denied");
     }
   };
 
   return (
-    <div className="auth-container">
-      <form className="card" onSubmit={handleSubmit(onSubmit)}>
-        <h2>Create Account</h2>
-        {error && <p className="error">{error}</p>}
-        
-        <div className="row">
-          <label>Name</label>
-          <input {...register("name")} />
-          {errors.name && <span className="error">{errors.name.message}</span>}
-        </div>
+    <div className="p-8 max-w-5xl mx-auto">
+      <div className="bg-slate-900/40 backdrop-blur-2xl border border-slate-800/60 rounded-3xl p-8 lg:p-12 shadow-2xl shadow-sky-950/20">
+        <header className="mb-12">
+          <div className="flex items-center gap-3 mb-4">
+             <span className="material-icons text-sky-400">add_moderator</span>
+             <h2 className="text-2xl font-black tracking-tighter uppercase italic glow-text">Register New Operator</h2>
+          </div>
+          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Establish a localized monitoring sector in the global grid</p>
+        </header>
 
-        <div className="row">
-          <label>Email</label>
-          <input type="email" {...register("email")} />
-          {errors.email && <span className="error">{errors.email.message}</span>}
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+          {error && (
+            <div className="lg:col-span-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl text-xs font-bold uppercase tracking-widest text-center italic">
+              {error}
+            </div>
+          )}
+          
+          <div className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Full Name</label>
+              <input {...register("name")} className="bg-slate-950/50 border-slate-800 focus:border-sky-500/50 py-3 rounded-xl transition-all" />
+              {errors.name && <span className="text-[10px] text-rose-400 font-bold uppercase tracking-tighter italic ml-1">{errors.name.message}</span>}
+            </div>
 
-        <div className="row">
-          <label>Password</label>
-          <input type="password" {...register("password")} />
-          {errors.password && <span className="error">{errors.password.message}</span>}
-        </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Grid Email</label>
+              <input type="email" {...register("email")} className="bg-slate-950/50 border-slate-800 focus:border-sky-500/50 py-3 rounded-xl transition-all" />
+              {errors.email && <span className="text-[10px] text-rose-400 font-bold uppercase tracking-tighter italic ml-1">{errors.email.message}</span>}
+            </div>
 
-        <div className="row" style={{ flexDirection: "column", alignItems: "flex-start" }}>
-          <label>Location (Select on Map)</label>
-          <MapPicker 
-            lat={lat} 
-            lon={lon} 
-            onChange={(newLat, newLon) => {
-              setValue("lat", newLat);
-              setValue("lon", newLon);
-            }} 
-          />
-          {errors.lat && <span className="error">Please select a location on the map</span>}
-        </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Security Token (Password)</label>
+              <input type="password" {...register("password")} className="bg-slate-950/50 border-slate-800 focus:border-sky-500/50 py-3 rounded-xl transition-all" />
+              {errors.password && <span className="text-[10px] text-rose-400 font-bold uppercase tracking-tighter italic ml-1">{errors.password.message}</span>}
+            </div>
 
-        <div className="row">
-          <label>Rain probability threshold ({Math.round(watch("rain_pop_threshold") * 100)}%)</label>
-          <input type="range" min="0" max="1" step="0.05" {...register("rain_pop_threshold")} />
-        </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Alert Sensitivity ({Math.round(watch("rain_pop_threshold") * 100)}%)</label>
+              <input type="range" min="0" max="1" step="0.05" {...register("rain_pop_threshold")} className="accent-sky-500 mt-2" />
+            </div>
 
-        <div className="row">
-          <label>Notification Channel</label>
-          <select {...register("channel")}>
-            <option value="email">Email</option>
-            <option value="sms">SMS</option>
-            <option value="both">Both</option>
-          </select>
-        </div>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Uplink Channel</label>
+              <select {...register("channel")} className="bg-slate-950/50 border-slate-800 focus:border-sky-500/50 py-3 rounded-xl transition-all">
+                <option value="email">Direct Email</option>
+                <option value="sms">SMS Protocol</option>
+                <option value="both">Dual Channel</option>
+              </select>
+            </div>
+          </div>
 
-        <button className="primary" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Creating account..." : "Sign Up"}
-        </button>
-        
-        <p style={{ marginTop: "1rem", textAlign: "center" }}>
-          Already have an account? <Link to="/login">Log In</Link>
-        </p>
-      </form>
+          <div className="space-y-6">
+            <div className="space-y-2 flex flex-col h-full">
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Sector Geolocation (Search & Click)</label>
+              <div className="flex-1 min-h-[300px]">
+                <MapPicker 
+                  lat={lat} 
+                  lon={lon} 
+                  onChange={(newLat, newLon) => {
+                    setValue("lat", newLat);
+                    setValue("lon", newLon);
+                  }} 
+                />
+              </div>
+              {errors.lat && <span className="text-[10px] text-rose-400 font-bold uppercase tracking-tighter italic ml-1 mt-2">Precision coordinates required. Select on map.</span>}
+            </div>
+          </div>
+
+          <div className="lg:col-span-2 pt-6">
+            <button 
+              className="w-full bg-sky-600 hover:bg-sky-500 text-white font-black uppercase tracking-[0.2em] py-5 rounded-2xl transition-all shadow-2xl shadow-sky-900/20" 
+              type="submit" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? "Establishing Protocol..." : "Finalize Grid Registration"}
+            </button>
+            <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6">
+               Already part of the grid? <Link to="/login" className="text-sky-500 hover:text-sky-400 transition-colors ml-1">Establish Uplink</Link>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }
