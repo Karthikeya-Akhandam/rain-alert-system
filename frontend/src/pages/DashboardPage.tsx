@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { RainBackground } from "../components/RainBackground";
+import { LiveRadar } from "../components/LiveRadar";
 
 type UserInfo = {
   id: number;
@@ -164,14 +165,8 @@ export function DashboardPage() {
               </div>
             </div>
 
-            <div className="mt-12 aspect-video w-full glass bg-slate-950/80 border-slate-700/50 flex flex-col items-center justify-center relative group overflow-hidden">
-               <div className="absolute inset-0 opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle, #0ea5e9 1px, transparent 1px)', backgroundSize: '24px 24px' }}></div>
-               <span className="material-icons text-sky-500 text-5xl animate-pulse">radar</span>
-               <div className="mt-4 text-[10px] font-mono text-sky-400 uppercase tracking-[0.4em] font-black">Live Radar Sector Active</div>
-               <div className="absolute bottom-4 flex gap-12 text-[9px] font-mono text-slate-500 font-bold uppercase">
-                 <span className="flex items-center gap-2"><span className="w-1 h-1 bg-sky-500 rounded-full"></span> LAT: {user?.lat.toFixed(4)}</span>
-                 <span className="flex items-center gap-2"><span className="w-1 h-1 bg-indigo-500 rounded-full"></span> LON: {user?.lon.toFixed(4)}</span>
-               </div>
+            <div className="mt-12 aspect-video w-full glass bg-slate-950/80 border-slate-700/50 relative group overflow-hidden">
+               <LiveRadar lat={user?.lat || 0} lon={user?.lon || 0} />
             </div>
           </div>
 
