@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.db_models import User
@@ -22,10 +22,12 @@ def get_user_by_email(db: Session, email: str) -> User | None:
 
 
 def create_user(db: Session, data: UserCreate, hashed_password: str) -> User:
+    is_first = db.scalar(select(func.count(User.id))) == 0
     u = User(
         name=data.name,
         email=str(data.email) if data.email else None,
         hashed_password=hashed_password,
+        is_admin=is_first,
         phone_e164=data.phone_e164,
         lat=data.lat,
         lon=data.lon,

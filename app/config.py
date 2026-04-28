@@ -9,7 +9,7 @@ class Settings(BaseSettings):
 
     open_meteo_base_url: str = "https://api.open-meteo.com/v1/forecast"
     database_url: str = "sqlite:///./rain_alert.db"
-    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173"
+    cors_origins: str = "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174,http://127.0.0.1:5174"
     admin_api_key: str = ""
     secret_key: str = "secret-key-change-this-in-production"
     algorithm: str = "HS256"

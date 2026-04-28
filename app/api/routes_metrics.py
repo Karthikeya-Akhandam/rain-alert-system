@@ -1,11 +1,9 @@
-from __future__ import annotations
-
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from app.api.deps import db_session_dep, verify_admin_key
-from app.db_models import NotificationAttempt, Run
+from app.api.deps import db_session_dep, get_current_admin_user
+from app.db_models import NotificationAttempt, Run, User
 
 router = APIRouter(prefix="/metrics", tags=["metrics"])
 
@@ -13,7 +11,7 @@ router = APIRouter(prefix="/metrics", tags=["metrics"])
 @router.get("")
 def metrics_summary(
     db: Session = Depends(db_session_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> dict[str, int]:
     runs_total = db.scalar(select(func.count()).select_from(Run)) or 0
     alerts_sent = (

@@ -1,6 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
 import { api } from "../api/client";
-import { UserForm } from "../components/UserForm";
 import { UserTable, type UserRow } from "../components/UserTable";
 
 export function UsersPage() {
@@ -22,10 +21,17 @@ export function UsersPage() {
   }, [load]);
 
   return (
-    <div>
-      {error && <p className="error">{error}</p>}
-      <UserForm onCreated={load} />
-      <UserTable rows={rows} onChanged={load} />
+    <div className="users-page">
+      <header style={{ marginBottom: "2rem" }}>
+        <h1>Admin: User Management</h1>
+        <p style={{ color: "#94a3b8" }}>Manage registered users and their notification settings.</p>
+      </header>
+      
+      {error && <p className="error card">{error}</p>}
+      
+      <div className="card">
+        <UserTable rows={rows} onChanged={load} />
+      </div>
     </div>
   );
 }

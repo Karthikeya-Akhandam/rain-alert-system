@@ -3,8 +3,9 @@ from __future__ import annotations
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.deps import db_session_dep, settings_dep, verify_admin_key
+from app.api.deps import db_session_dep, settings_dep, get_current_admin_user
 from app.config import Settings
+from app.db_models import User
 from app.decision.engine import RainDecisionEngine
 from app.jobs.rain_alert_job import run_rain_alert_job
 from app.repository import history as history_repo
@@ -27,12 +28,13 @@ def preview_run(
     body: RunPreviewRequest,
     db: Session = Depends(db_session_dep),
     settings: Settings = Depends(settings_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> RunPreviewResponse:
     users = users_repo.list_users(db)
-    if body.user_ids:
+    if body.user_ids is not None:
         wanted = set(body.user_ids)
         users = [u for u in users if u.id in wanted]
+    
     client = WeatherClient(settings)
     engine = RainDecisionEngine()
     results: list[RunPreviewUserResult] = []
@@ -72,7 +74,7 @@ def preview_run(
 def execute_run(
     db: Session = Depends(db_session_dep),
     settings: Settings = Depends(settings_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> RunExecuteResponse:
     run_id, processed, sent, failed = run_rain_alert_job(db, settings, dry_run=False)
     return RunExecuteResponse(
@@ -87,7 +89,7 @@ def execute_run(
 @router.get("", response_model=list[RunSummaryOut])
 def list_runs(
     db: Session = Depends(db_session_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> list[RunSummaryOut]:
     runs = history_repo.list_runs(db, limit=50)
     return [RunSummaryOut.model_validate(r) for r in runs]
@@ -97,7 +99,7 @@ def list_runs(
 def list_run_notifications(
     run_id: int,
     db: Session = Depends(db_session_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> list[NotificationAttemptOut]:
     if history_repo.get_run(db, run_id) is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="run not found")

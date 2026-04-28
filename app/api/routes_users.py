@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api import security
-from app.api.deps import db_session_dep, get_current_user, settings_dep, verify_admin_key
+from app.api.deps import db_session_dep, get_current_user, get_current_admin_user, settings_dep
 from app.config import Settings
 from app.db_models import User
 from app.notify.email_sender import SmtpEmailSender
@@ -27,27 +27,34 @@ def update_me(
     db: Session = Depends(db_session_dep),
     current_user: User = Depends(get_current_user),
 ) -> UserOut:
+    # Explicitly prevent non-admins from making themselves admins if they try to hack the payload
+    # Though UserUpdate schema should ideally not have is_admin, or we ignore it here.
     u = users_repo.update_user(db, current_user.id, body)
     return UserOut.model_validate(u)
 
 
-@router.post("/me/test-alert")
-def send_test_alert(
-    current_user: User = Depends(get_current_user),
+@router.post("/{user_id}/test-alert")
+def admin_send_test_alert(
+    user_id: int,
+    db: Session = Depends(db_session_dep),
+    current_admin: User = Depends(get_current_admin_user),
     settings: Settings = Depends(settings_dep),
 ) -> dict[str, str]:
+    target_user = users_repo.get_user(db, user_id)
+    if not target_user:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
     email_sender = SmtpEmailSender(settings)
     sms_sender = TwilioSmsSender(settings)
-    router = NotificationRouter(email_sender, sms_sender)
+    router_inst = NotificationRouter(email_sender, sms_sender)
 
-    subject = "Rain Alert Demo: Test Notification"
+    subject = "Rain Alert Demo: Admin Test Notification"
     body = (
-        f"Hello {current_user.name}!\n\n"
-        "This is a manually triggered test notification from your Smart Rain Alert system.\n"
-        "Your alert settings are working correctly."
+        f"Hello {target_user.name}!\n\n"
+        "Your Smart Rain Alert system is working correctly. This test was triggered by an administrator."
     )
 
-    results = list(router.alert_user(current_user, subject, body))
+    results = list(router_inst.alert_user(target_user, subject, body))
     success = any(r.ok for _, r in results)
 
     if not success:
@@ -57,7 +64,7 @@ def send_test_alert(
             detail=f"Failed to send alert: {', '.join(filter(None, errors))}",
         )
 
-    return {"message": "Test alert sent successfully"}
+    return {"message": f"Test alert sent to {target_user.name}"}
 
 
 def _validate_contacts(data: UserCreate) -> None:
@@ -74,18 +81,18 @@ def _validate_contacts(data: UserCreate) -> None:
 
 
 @router.get("", response_model=list[UserOut])
-def list_users(
+def admin_list_users(
     db: Session = Depends(db_session_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> list[UserOut]:
     return users_repo.list_users(db)
 
 
 @router.post("", response_model=UserOut, status_code=status.HTTP_201_CREATED)
-def create_user(
+def admin_create_user(
     body: UserCreate,
     db: Session = Depends(db_session_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> UserOut:
     _validate_contacts(body)
     hashed_password = security.get_password_hash(body.password)
@@ -94,11 +101,11 @@ def create_user(
 
 
 @router.put("/{user_id}", response_model=UserOut)
-def update_user(
+def admin_update_user(
     user_id: int,
     body: UserUpdate,
     db: Session = Depends(db_session_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> UserOut:
     u = users_repo.update_user(db, user_id, body)
     if not u:
@@ -107,10 +114,10 @@ def update_user(
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(
+def admin_delete_user(
     user_id: int,
     db: Session = Depends(db_session_dep),
-    _: None = Depends(verify_admin_key),
+    _: User = Depends(get_current_admin_user),
 ) -> None:
     if not users_repo.delete_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="user not found")

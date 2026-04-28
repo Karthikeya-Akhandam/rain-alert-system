@@ -72,6 +72,7 @@ class UserOut(BaseModel):
     id: int
     name: str
     email: str | None
+    is_admin: bool
     phone_e164: str | None
     lat: float
     lon: float

@@ -1,19 +1,19 @@
 from unittest.mock import MagicMock, patch
-
 from app.config import Settings
 from app.jobs.rain_alert_job import run_rain_alert_job
 from app.weather.parser import NormalizedForecast
-
 
 @patch("app.jobs.rain_alert_job.WeatherClient")
 def test_job_dry_run_skips_notifications(mock_client, client):
     from app.repository.db import get_session_factory
 
+    # Create user via signup
     client.post(
-        "/users",
+        "/auth/signup",
         json={
             "name": "U",
             "email": "u@e.com",
+            "password": "password123",
             "lat": 1,
             "lon": 2,
             "rain_pop_threshold": 0.0,
@@ -24,7 +24,6 @@ def test_job_dry_run_skips_notifications(mock_client, client):
     db = factory()
     try:
         settings = Settings(
-            openweather_api_key="k",
             smtp_enabled=False,
             sms_enabled=False,
         )
