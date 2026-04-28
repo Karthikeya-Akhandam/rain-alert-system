@@ -35,7 +35,7 @@ function LocationMarker({ lat, lon, onChange }: MapPickerProps) {
 function ChangeView({ center }: { center: [number, number] }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(center, map.getZoom());
+    map.setView(center, map.getZoom() === 2 ? 13 : map.getZoom());
   }, [center, map]);
   return null;
 }
@@ -65,33 +65,43 @@ export function MapPicker({ lat, lon, onChange }: MapPickerProps) {
   };
 
   return (
-    <div className="map-picker">
-      <div className="search-bar row">
+    <div className="map-picker space-y-3">
+      <div className="flex gap-2">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search city (e.g. London)..."
+          onKeyDown={(e) => e.key === 'Enter' && void handleSearch(e as any)}
+          placeholder="Search sector (e.g. Tokyo)..."
+          className="bg-slate-950/50 border-slate-800 text-xs font-mono py-2 rounded-lg"
         />
-        <button type="button" onClick={handleSearch} disabled={loading}>
-          {loading ? "Searching..." : "Search"}
+        <button 
+          type="button" 
+          onClick={handleSearch} 
+          disabled={loading}
+          className="bg-sky-600 hover:bg-sky-500 text-white text-[10px] font-black uppercase tracking-widest px-4 rounded-lg transition-all whitespace-nowrap"
+        >
+          {loading ? "Scanning..." : "Locate"}
         </button>
       </div>
-      <div style={{ height: "300px", marginTop: "10px", borderRadius: "8px", overflow: "hidden" }}>
+      <div className="h-[300px] rounded-xl overflow-hidden border border-slate-800 shadow-inner">
         <MapContainer
           center={[lat || 0, lon || 0]}
           zoom={lat === 0 && lon === 0 ? 2 : 13}
-          style={{ height: "100%", width: "100%" }}
+          style={{ height: "100%", width: "100%", background: "#020617" }}
+          zoomControl={false}
+          attributionControl={false}
         >
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
           />
           <LocationMarker lat={lat} lon={lon} onChange={onChange} />
           <ChangeView center={[lat || 0, lon || 0]} />
         </MapContainer>
       </div>
-      <p style={{ fontSize: "0.8em", color: "#666" }}>Click on the map to fine-tune your location.</p>
+      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest italic ml-1">
+        ❯ Click map to confirm precise orbital coordinates
+      </p>
     </div>
   );
 }

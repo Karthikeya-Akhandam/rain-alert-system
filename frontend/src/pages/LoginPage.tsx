@@ -25,7 +25,7 @@ export function LoginPage() {
 
   return (
     <div className="auth-container p-4">
-      <div className="bg-slate-900/40 backdrop-blur-2xl border border-slate-800/60 rounded-3xl p-10 w-full max-max-md shadow-2xl shadow-sky-950/20">
+      <div className="bg-slate-900/40 backdrop-blur-2xl border border-slate-800/60 rounded-3xl p-10 w-full max-w-md shadow-2xl shadow-sky-950/20">
         <div className="flex justify-center mb-8">
           <div className="bg-sky-500/20 p-4 rounded-2xl border border-sky-500/30">
             <span className="material-icons text-sky-400 text-4xl block leading-none">thunderstorm</span>
