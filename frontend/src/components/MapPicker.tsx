@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from "react";
-import Map, { Marker, MapRef } from "react-map-gl/maplibre";
+import { useEffect, useState } from "react";
+import Map, { Marker } from "react-map-gl/maplibre";
 import "maplibre-gl/dist/maplibre-gl.css";
 
 interface MapPickerProps {
@@ -11,7 +11,6 @@ interface MapPickerProps {
 export function MapPicker({ lat, lon, onChange }: MapPickerProps) {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
-  const mapRef = useRef<MapRef>(null);
 
   const [viewState, setViewState] = useState({
     latitude: lat || 0,
