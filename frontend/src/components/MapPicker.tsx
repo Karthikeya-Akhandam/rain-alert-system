@@ -11,6 +11,7 @@ interface MapPickerProps {
 export function MapPicker({ lat, lon, onChange }: MapPickerProps) {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const [viewState, setViewState] = useState({
     latitude: lat || 0,
@@ -18,32 +19,44 @@ export function MapPicker({ lat, lon, onChange }: MapPickerProps) {
     zoom: lat === 0 && lon === 0 ? 2 : 12,
   });
 
-  // Sync viewState when lat/lon props change from outside (e.g. search)
+  // Sync viewState when lat/lon props change from outside (e.g. search or parent update)
   useEffect(() => {
-    if (lat !== 0 && lon !== 0) {
-      setViewState(prev => ({
-        ...prev,
-        latitude: lat,
-        longitude: lon,
-      }));
-    }
+    setViewState(prev => ({
+      ...prev,
+      latitude: lat,
+      longitude: lon,
+      zoom: lat === 0 && lon === 0 ? prev.zoom : (prev.zoom < 10 ? 12 : prev.zoom),
+    }));
   }, [lat, lon]);
 
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault();
     if (!search) return;
+    
     setLoading(true);
+    setError(null);
     try {
+      // Using Nominatim (OSM) for better search results (acronyms, local places)
       const resp = await fetch(
-        `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(search)}&count=1&language=en&format=json`
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(search)}&format=json&limit=1`,
+        {
+          headers: {
+            'Accept-Language': 'en',
+            // Identifying the user agent as per Nominatim's usage policy
+            'User-Agent': 'RainAlertSystem/1.0'
+          }
+        }
       );
       const data = await resp.json();
-      if (data.results && data.results.length > 0) {
-        const result = data.results[0];
-        onChange(result.latitude, result.longitude);
+      if (data && data.length > 0) {
+        const result = data[0];
+        onChange(parseFloat(result.lat), parseFloat(result.lon));
+      } else {
+        setError("No results found. Try a more specific name.");
       }
     } catch (err) {
       console.error("Search failed", err);
+      setError("Search service unavailable. Please try again later.");
     } finally {
       setLoading(false);
     }
@@ -56,23 +69,26 @@ export function MapPicker({ lat, lon, onChange }: MapPickerProps) {
 
   return (
     <div className="map-picker space-y-4">
-      <div className="flex gap-2">
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && void handleSearch(e as any)}
-          placeholder="Search location (e.g. London)..."
-          className="flex-1 bg-slate-900 border-slate-700 text-slate-200 text-sm py-2 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/50"
-        />
-        <button 
-          type="button" 
-          onClick={handleSearch} 
-          disabled={loading}
-          className="bg-sky-600 hover:bg-sky-500 disabled:bg-slate-700 text-white text-xs font-semibold px-4 rounded-lg transition-colors whitespace-nowrap"
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
+      <div className="space-y-1">
+        <div className="flex gap-2">
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && void handleSearch(e)}
+            placeholder="Search location (e.g. London, SRMIST)..."
+            className="flex-1 bg-slate-900 border-slate-700 text-slate-200 text-sm py-2 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/50"
+          />
+          <button 
+            type="button" 
+            onClick={() => void handleSearch()} 
+            disabled={loading}
+            className="bg-sky-600 hover:bg-sky-500 disabled:bg-slate-700 text-white text-xs font-semibold px-4 rounded-lg transition-colors whitespace-nowrap"
+          >
+            {loading ? "Searching..." : "Search"}
+          </button>
+        </div>
+        {error && <p className="text-[10px] text-red-400 font-medium ml-1">{error}</p>}
       </div>
       
       <div className="h-[350px] rounded-xl overflow-hidden border border-slate-800 shadow-xl relative group">
