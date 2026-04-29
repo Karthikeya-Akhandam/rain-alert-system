@@ -1,20 +1,6 @@
-import { useEffect, useState } from "react";
-import { MapContainer, Marker, TileLayer, useMap, useMapEvents } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-
-// Fix for default marker icon in Leaflet + Webpack/Vite
-import icon from "leaflet/dist/images/marker-icon.png";
-import iconShadow from "leaflet/dist/images/marker-shadow.png";
-
-let DefaultIcon = L.icon({
-  iconUrl: icon,
-  shadowUrl: iconShadow,
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-});
-
-L.Marker.prototype.options.icon = DefaultIcon;
+import { useEffect, useState, useRef } from "react";
+import Map, { Marker, MapRef } from "react-map-gl/maplibre";
+import "maplibre-gl/dist/maplibre-gl.css";
 
 interface MapPickerProps {
   lat: number;
@@ -22,27 +8,27 @@ interface MapPickerProps {
   onChange: (lat: number, lon: number) => void;
 }
 
-function LocationMarker({ lat, lon, onChange }: MapPickerProps) {
-  useMapEvents({
-    click(e) {
-      onChange(e.latlng.lat, e.latlng.lng);
-    },
-  });
-
-  return lat !== 0 || lon !== 0 ? <Marker position={[lat, lon]} /> : null;
-}
-
-function ChangeView({ center }: { center: [number, number] }) {
-  const map = useMap();
-  useEffect(() => {
-    map.setView(center, map.getZoom() === 2 ? 13 : map.getZoom());
-  }, [center, map]);
-  return null;
-}
-
 export function MapPicker({ lat, lon, onChange }: MapPickerProps) {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
+  const mapRef = useRef<MapRef>(null);
+
+  const [viewState, setViewState] = useState({
+    latitude: lat || 0,
+    longitude: lon || 0,
+    zoom: lat === 0 && lon === 0 ? 2 : 12,
+  });
+
+  // Sync viewState when lat/lon props change from outside (e.g. search)
+  useEffect(() => {
+    if (lat !== 0 && lon !== 0) {
+      setViewState(prev => ({
+        ...prev,
+        latitude: lat,
+        longitude: lon,
+      }));
+    }
+  }, [lat, lon]);
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -64,44 +50,51 @@ export function MapPicker({ lat, lon, onChange }: MapPickerProps) {
     }
   };
 
+  const onMapClick = (e: any) => {
+    const { lng, lat } = e.lngLat;
+    onChange(lat, lng);
+  };
+
   return (
-    <div className="map-picker space-y-3">
+    <div className="map-picker space-y-4">
       <div className="flex gap-2">
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && void handleSearch(e as any)}
-          placeholder="Search sector (e.g. Tokyo)..."
-          className="bg-slate-950/50 border-slate-800 text-xs font-mono py-2 rounded-lg"
+          placeholder="Search location (e.g. London)..."
+          className="flex-1 bg-slate-900 border-slate-700 text-slate-200 text-sm py-2 px-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-sky-500/50"
         />
         <button 
           type="button" 
           onClick={handleSearch} 
           disabled={loading}
-          className="bg-sky-600 hover:bg-sky-500 text-white text-[10px] font-black uppercase tracking-widest px-4 rounded-lg transition-all whitespace-nowrap"
+          className="bg-sky-600 hover:bg-sky-500 disabled:bg-slate-700 text-white text-xs font-semibold px-4 rounded-lg transition-colors whitespace-nowrap"
         >
-          {loading ? "Scanning..." : "Locate"}
+          {loading ? "Searching..." : "Search"}
         </button>
       </div>
-      <div className="h-[300px] rounded-xl overflow-hidden border border-slate-800 shadow-inner">
-        <MapContainer
-          center={[lat || 0, lon || 0]}
-          zoom={lat === 0 && lon === 0 ? 2 : 13}
-          style={{ height: "100%", width: "100%", background: "#020617" }}
-          zoomControl={false}
-          attributionControl={false}
+      
+      <div className="h-[350px] rounded-xl overflow-hidden border border-slate-800 shadow-xl relative group">
+        <Map
+          {...viewState}
+          onMove={evt => setViewState(evt.viewState)}
+          onClick={onMapClick}
+          mapStyle="https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+          style={{ width: '100%', height: '100%' }}
         >
-          <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-          />
-          <LocationMarker lat={lat} lon={lon} onChange={onChange} />
-          <ChangeView center={[lat || 0, lon || 0]} />
-        </MapContainer>
+          {lat !== 0 && lon !== 0 && (
+            <Marker longitude={lon} latitude={lat} color="#38bdf8" />
+          )}
+        </Map>
+        
+        <div className="absolute bottom-4 left-4 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-full border border-slate-700 pointer-events-none transition-opacity group-hover:opacity-100 opacity-60">
+          <p className="text-[10px] font-medium text-slate-300">
+            Click map to set coordinates
+          </p>
+        </div>
       </div>
-      <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest italic ml-1">
-        ❯ Click map to confirm precise orbital coordinates
-      </p>
     </div>
   );
 }
