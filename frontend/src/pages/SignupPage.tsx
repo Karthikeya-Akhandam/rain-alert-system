@@ -43,6 +43,7 @@ export function SignupPage() {
 
   const lat = watch("lat");
   const lon = watch("lon");
+  const rainPopThreshold = watch("rain_pop_threshold");
 
   const onSubmit = async (v: FormValues) => {
     setError(null);
@@ -56,66 +57,91 @@ export function SignupPage() {
       setToken(loginResp.data.access_token);
       navigate("/");
     } catch (err: any) {
-      setError(err.response?.data?.detail || "Registry request denied");
+      setError(err.response?.data?.detail || "Registration failed. Please try again.");
     }
   };
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
-      <div className="bg-slate-900/40 backdrop-blur-2xl border border-slate-800/60 rounded-3xl p-8 lg:p-12 shadow-2xl shadow-sky-950/20">
-        <header className="mb-12">
-          <div className="flex items-center gap-3 mb-4">
-             <span className="material-icons text-sky-400">add_moderator</span>
-             <h2 className="text-2xl font-black tracking-tighter uppercase italic glow-text">Register New Operator</h2>
-          </div>
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Establish a localized monitoring sector in the global grid</p>
+    <div className="max-w-5xl mx-auto py-4">
+      <div className="bg-[#0f1423] border border-slate-800 rounded-2xl p-8 lg:p-10 shadow-2xl">
+        <header className="mb-10">
+          <h1 className="text-2xl font-bold text-slate-100">Create Account</h1>
+          <p className="text-slate-400 text-sm mt-2">Set up your location and notification preferences</p>
         </header>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-2 gap-10">
           {error && (
-            <div className="lg:col-span-2 bg-rose-500/10 border border-rose-500/20 text-rose-400 p-4 rounded-xl text-xs font-bold uppercase tracking-widest text-center italic">
+            <div className="lg:col-span-2 bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg text-sm text-center font-medium">
               {error}
             </div>
           )}
           
           <div className="space-y-6">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Full Name</label>
-              <input {...register("name")} className="bg-slate-950/50 border-slate-800 focus:border-sky-500/50 py-3 rounded-xl transition-all" />
-              {errors.name && <span className="text-[10px] text-rose-400 font-bold uppercase tracking-tighter italic ml-1">{errors.name.message}</span>}
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Full Name</label>
+              <input 
+                {...register("name")} 
+                className="w-full bg-[#0b0f1a] border-slate-800 focus:border-sky-500/50 py-2.5 px-4 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500/50" 
+                placeholder="John Doe"
+              />
+              {errors.name && <span className="text-xs text-red-400 font-medium ml-1">{errors.name.message}</span>}
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Grid Email</label>
-              <input type="email" {...register("email")} className="bg-slate-950/50 border-slate-800 focus:border-sky-500/50 py-3 rounded-xl transition-all" />
-              {errors.email && <span className="text-[10px] text-rose-400 font-bold uppercase tracking-tighter italic ml-1">{errors.email.message}</span>}
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Email Address</label>
+              <input 
+                type="email" 
+                {...register("email")} 
+                className="w-full bg-[#0b0f1a] border-slate-800 focus:border-sky-500/50 py-2.5 px-4 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500/50" 
+                placeholder="you@example.com"
+              />
+              {errors.email && <span className="text-xs text-red-400 font-medium ml-1">{errors.email.message}</span>}
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Security Token (Password)</label>
-              <input type="password" {...register("password")} className="bg-slate-950/50 border-slate-800 focus:border-sky-500/50 py-3 rounded-xl transition-all" />
-              {errors.password && <span className="text-[10px] text-rose-400 font-bold uppercase tracking-tighter italic ml-1">{errors.password.message}</span>}
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Password</label>
+              <input 
+                type="password" 
+                {...register("password")} 
+                className="w-full bg-[#0b0f1a] border-slate-800 focus:border-sky-500/50 py-2.5 px-4 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500/50" 
+                placeholder="••••••••"
+              />
+              {errors.password && <span className="text-xs text-red-400 font-medium ml-1">{errors.password.message}</span>}
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Alert Sensitivity ({Math.round(watch("rain_pop_threshold") * 100)}%)</label>
-              <input type="range" min="0" max="1" step="0.05" {...register("rain_pop_threshold")} className="accent-sky-500 mt-2" />
+              <div className="flex justify-between items-center ml-1">
+                <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Alert Sensitivity</label>
+                <span className="text-xs font-bold text-sky-500">{Math.round(rainPopThreshold * 100)}% POP</span>
+              </div>
+              <input 
+                type="range" 
+                min="0" 
+                max="1" 
+                step="0.05" 
+                {...register("rain_pop_threshold")} 
+                className="w-full accent-sky-500 mt-2 bg-slate-800 h-1.5 rounded-lg appearance-none cursor-pointer" 
+              />
+              <p className="text-[10px] text-slate-500 italic mt-1 ml-1">You will be notified when rain probability exceeds this value.</p>
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Uplink Channel</label>
-              <select {...register("channel")} className="bg-slate-950/50 border-slate-800 focus:border-sky-500/50 py-3 rounded-xl transition-all">
-                <option value="email">Direct Email</option>
-                <option value="sms">SMS Protocol</option>
-                <option value="both">Dual Channel</option>
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Notification Channel</label>
+              <select 
+                {...register("channel")} 
+                className="w-full bg-[#0b0f1a] border-slate-800 focus:border-sky-500/50 py-2.5 px-4 rounded-lg text-slate-200 text-sm focus:outline-none focus:ring-1 focus:ring-sky-500/50 appearance-none"
+              >
+                <option value="email">Email</option>
+                <option value="sms">SMS</option>
+                <option value="both">Both Email & SMS</option>
               </select>
             </div>
           </div>
 
           <div className="space-y-6">
             <div className="space-y-2 flex flex-col h-full">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-1">Sector Geolocation (Search & Click)</label>
-              <div className="flex-1 min-h-[300px]">
+              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider ml-1">Select Location</label>
+              <div className="flex-1 min-h-[350px]">
                 <MapPicker 
                   lat={lat} 
                   lon={lon} 
@@ -125,20 +151,20 @@ export function SignupPage() {
                   }} 
                 />
               </div>
-              {errors.lat && <span className="text-[10px] text-rose-400 font-bold uppercase tracking-tighter italic ml-1 mt-2">Precision coordinates required. Select on map.</span>}
+              {errors.lat && <span className="text-xs text-red-400 font-medium ml-1 mt-2">Please select your location on the map.</span>}
             </div>
           </div>
 
-          <div className="lg:col-span-2 pt-6">
+          <div className="lg:col-span-2 pt-4">
             <button 
-              className="w-full bg-sky-600 hover:bg-sky-500 text-white font-black uppercase tracking-[0.2em] py-5 rounded-2xl transition-all shadow-2xl shadow-sky-900/20" 
+              className="w-full bg-sky-600 hover:bg-sky-500 text-white font-semibold py-3 rounded-lg transition-colors disabled:bg-slate-700" 
               type="submit" 
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Establishing Protocol..." : "Finalize Grid Registration"}
+              {isSubmitting ? "Creating Account..." : "Create Account"}
             </button>
-            <p className="text-center text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-6">
-               Already part of the grid? <Link to="/login" className="text-sky-500 hover:text-sky-400 transition-colors ml-1">Establish Uplink</Link>
+            <p className="text-center text-xs text-slate-500 mt-6">
+               Already have an account? <Link to="/login" className="text-sky-500 hover:text-sky-400 transition-colors font-medium">Login</Link>
             </p>
           </div>
         </form>
