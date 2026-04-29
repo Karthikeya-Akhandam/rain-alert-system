@@ -12,7 +12,7 @@ export function UsersPage() {
       const r = await api.get<UserRow[]>("/users");
       setRows(r.data);
     } catch (e: unknown) {
-      setError("Failed to load users. You might not have admin permissions.");
+      setError("Failed to load users. You might not have permission to view this page.");
     }
   }, []);
 
@@ -21,15 +21,19 @@ export function UsersPage() {
   }, [load]);
 
   return (
-    <div className="users-page">
-      <header style={{ marginBottom: "2rem" }}>
-        <h1>Admin: User Management</h1>
-        <p style={{ color: "#94a3b8" }}>Manage registered users and their notification settings.</p>
+    <div className="space-y-8">
+      <header>
+        <h1 className="text-2xl font-bold text-slate-100">User Management</h1>
+        <p className="text-slate-400 text-sm mt-1">Manage system operators and their notification preferences.</p>
       </header>
       
-      {error && <p className="error card">{error}</p>}
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-lg text-sm font-medium">
+          {error}
+        </div>
+      )}
       
-      <div className="card">
+      <div className="bg-[#0f1423] border border-slate-800 rounded-xl overflow-hidden">
         <UserTable rows={rows} onChanged={load} />
       </div>
     </div>
