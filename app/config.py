@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from: str = ""
     smtp_use_tls: bool = True
+    smtp_use_ssl: bool = False
     sms_enabled: bool = False
     twilio_account_sid: str = ""
     twilio_auth_token: str = ""

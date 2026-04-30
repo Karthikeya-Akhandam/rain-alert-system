@@ -25,17 +25,18 @@ class SmtpEmailSender:
         msg["To"] = to_email
         msg.set_content(body)
         try:
-            if self._s.smtp_use_tls:
-                with smtplib.SMTP(self._s.smtp_host, self._s.smtp_port, timeout=30) as smtp:
-                    smtp.ehlo()
-                    smtp.starttls()
-                    smtp.ehlo()
-                    if self._s.smtp_user:
+            if self._s.smtp_use_ssl:
+                with smtplib.SMTP_SSL(self._s.smtp_host, self._s.smtp_port, timeout=30) as smtp:
+                    if self._s.smtp_user and smtp.has_extn("AUTH"):
                         smtp.login(self._s.smtp_user, self._s.smtp_password)
                     smtp.send_message(msg)
             else:
-                with smtplib.SMTP_SSL(self._s.smtp_host, self._s.smtp_port, timeout=30) as smtp:
-                    if self._s.smtp_user:
+                with smtplib.SMTP(self._s.smtp_host, self._s.smtp_port, timeout=30) as smtp:
+                    if self._s.smtp_use_tls:
+                        smtp.ehlo()
+                        smtp.starttls()
+                        smtp.ehlo()
+                    if self._s.smtp_user and smtp.has_extn("AUTH"):
                         smtp.login(self._s.smtp_user, self._s.smtp_password)
                     smtp.send_message(msg)
             return SendResult(True, provider_message_id=None)
